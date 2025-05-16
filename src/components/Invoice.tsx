@@ -1,42 +1,48 @@
-const Invoice = () => {
-	const summary = [
-		{ time: '01/04/2024 | 12:52', orderId: '25625258', income: 72.25 },
-		{ time: '01/04/2024 | 08:40', orderId: '25625258', income: 112.2 },
-		{ time: '01/04/2024 | 16:20', orderId: '25625258', income: 96.32 },
-		{ time: '01/04/2024 | 18:11', orderId: '25625258', income: 85.32 },
-		{ time: '01/04/2024 | 20:55', orderId: '25625258', income: 55.55 },
-		{ time: '01/04/2024 | 20:58', orderId: '25625258', income: 28.36 },
-	];
+import { IInvoice } from '@/types/invoiceTypes';
+import { FC } from 'react';
 
-	const total = summary.reduce((acc, curr) => acc + curr.income, 0).toFixed(2);
+const Invoice: FC<{ invoice: IInvoice }> = ({ invoice }) => {
+	const total = invoice?.items
+		?.reduce((acc, curr) => acc + curr.riderFare, 0)
+		.toFixed(2);
 
 	return (
 		<div className='lg:w-8/12 mx-auto bg-white shadow-md border-t-10 border-t-amber-500 rounded-md p-6 md:p-10 text-sm'>
 			<img src='/logo.png' width={150} height={150} />
 			<h2 className='text-orange-600 font-semibold text-lg mb-6'>
-				Your daily earning summary, Fariha Chowdhury
+				Your daily earning summary, {invoice?.rider?.name}
 			</h2>
 
 			<div className='flex flex-col md:flex-row justify-between text-gray-800 mb-6 space-y-4 md:space-y-0'>
 				<div>
 					<p className='font-semibold'>Pay to</p>
-					<p>Fariha Chowdhury</p>
+					<p>{invoice?.rider?.name || 'N/A'}</p>
 					<p>
-						Rider ID: <span className='font-medium'>2368758</span>
+						Rider ID:{' '}
+						<span className='font-medium'>
+							{invoice?.rider?.serialNumber || 'N/A'}
+						</span>
 					</p>
-					<p>Address: Banani, Dhaka 1212, Bangladesh</p>
+					<p>Address: {invoice?.rider?.address || 'N/A'}</p>
 					<p>
-						Phone: <span className='font-medium'>+88 01258754362</span>
+						Phone:{' '}
+						<span className='font-medium'>
+							{invoice?.rider?.contactNumber || 'N/A'}
+						</span>
 					</p>
-					<p>Email: farihachowdhury@gmail.com</p>
+					<p>Email: {invoice?.rider?.email || 'N/A'}</p>
 				</div>
 				<div className='text-right md:text-left'>
 					<p className='font-semibold'>Invoice details</p>
 					<p>
-						Invoice number: <span className='font-medium'>14523658</span>
+						Invoice number:{' '}
+						<span className='font-medium'>{invoice?.uid || 'N/A'}</span>
 					</p>
 					<p>
-						Invoice Date: <span className='font-medium'>27/04/2025</span>
+						Invoice Date:{' '}
+						<span className='font-medium'>
+							{formatDate(invoice?.createdAt)}
+						</span>
 					</p>
 				</div>
 			</div>
@@ -53,11 +59,11 @@ const Invoice = () => {
 							</tr>
 						</thead>
 						<tbody>
-							{summary.map((item, idx) => (
+							{invoice?.items?.map((item, idx) => (
 								<tr key={idx} className='border-b last:border-b-0'>
-									<td className='py-2 px-4'>{item.time}</td>
-									<td className='py-2 px-4'>{item.orderId}</td>
-									<td className='py-2 px-4'>৳ {item.income.toFixed(2)}</td>
+									<td className='py-2 px-4'>{formatDate(item?.date)}</td>
+									<td className='py-2 px-4'>{item?.deliveryUID}</td>
+									<td className='py-2 px-4'>৳ {item?.riderFare?.toFixed(2)}</td>
 								</tr>
 							))}
 						</tbody>
@@ -77,3 +83,19 @@ const Invoice = () => {
 };
 
 export default Invoice;
+
+const formatDate = (date: string, locale: string = 'en-BD') => {
+	if (!date) {
+		return '';
+	}
+
+	return new Intl.DateTimeFormat(locale, {
+		year: 'numeric',
+		month: 'long',
+		day: '2-digit',
+		// hour: "2-digit",
+		// minute: "2-digit",
+		// second: "2-digit",
+		// hour12: true,
+	}).format(new Date(date));
+};
